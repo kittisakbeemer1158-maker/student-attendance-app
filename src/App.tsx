@@ -13,8 +13,8 @@ function App() {
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceLogs, setAttendanceLogs] = useState<AttendanceLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [schoolName, setSchoolName] = useState('โรงเรียนตัวอย่าง');
-  const [teacherName, setTeacherName] = useState('ครูใจดี มีสุข');
+  const [schoolName, setSchoolName] = useState('โรงเรียนบ้านคลองสารเพชร');
+  const [teacherName, setTeacherName] = useState('ครูชลดา ไชยโยธา');
 
   useEffect(() => {
     const loadData = async () => {
