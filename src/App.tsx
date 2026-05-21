@@ -7,7 +7,9 @@ import Report from './components/Report';
 import Status from './components/Status';
 import Stats from './components/Stats';
 import StudentManager from './components/StudentManager';
-import { ClipboardList, FileText, CheckCircle2, BarChart3, Users, School } from 'lucide-react';
+import AttendanceSummary from './components/AttendanceSummary';
+import HealthCheck from './components/HealthCheck';
+import { ClipboardList, FileText, CheckCircle2, BarChart3, Users, School, Calendar, Activity } from 'lucide-react';
 
 function App() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -110,7 +112,7 @@ function App() {
             
             <nav className="flex overflow-x-auto gap-1 md:gap-2 p-1 bg-pink-50 rounded-2xl no-scrollbar">
               <Link to="/" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
-                <ClipboardList className="w-4 h-4 mr-1.5" /> เช็คชื่อ
+                <ClipboardList className="w-4 h-4 mr-1.5" /> เช็คชื่อประจำวัน
               </Link>
               <Link to="/report" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
                 <FileText className="w-4 h-4 mr-1.5" /> รายงาน
@@ -121,6 +123,14 @@ function App() {
               <Link to="/stats" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
                 <BarChart3 className="w-4 h-4 mr-1.5" /> สถิติ
               </Link>
+              
+              <Link to="/summary" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
+                <Calendar className="w-4 h-4 mr-1.5" /> สรุปเวลาเรียน
+              </Link>
+              <Link to="/health" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
+                <Activity className="w-4 h-4 mr-1.5" /> ตรวจสุขภาพ
+              </Link>
+
               <Link to="/manage" className="flex items-center px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold hover:bg-white hover:text-pink-500 transition-all whitespace-nowrap">
                 <Users className="w-4 h-4 mr-1.5" /> จัดการ
               </Link>
@@ -136,6 +146,9 @@ function App() {
             <Route path="/status" element={<Status attendanceLogs={attendanceLogs} />} />
             <Route path="/stats" element={<Stats attendanceLogs={attendanceLogs} />} />
             <Route path="/manage" element={<StudentManager students={students} setStudents={setStudents} />} />
+            
+            <Route path="/summary" element={<AttendanceSummary students={students} />} />
+            <Route path="/health" element={<HealthCheck students={students} />} />
           </Routes>
         </main>
       </div>
