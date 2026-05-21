@@ -21,7 +21,7 @@ const AttendanceSummary: React.FC<Props> = ({ students }) => {
     setLoading(true);
     try {
       // 1. Fetch saved summary
-      const saved = await fetchLogs('getAttendanceSummary', { month });
+      await fetchLogs('getAttendanceSummary', { month });
       
       // 2. Fetch raw attendance for the month to calculate
       const [yearStr, monthStr] = month.split('-');
