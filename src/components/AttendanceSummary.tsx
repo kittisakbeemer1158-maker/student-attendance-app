@@ -151,7 +151,6 @@ const AttendanceSummary: React.FC<Props> = ({ students }) => {
         <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 font-semibold text-gray-600">เลขที่/รหัส</th>
               <th className="px-4 py-3 font-semibold text-gray-600 text-left">ชื่อ-สกุล</th>
               <th className="px-4 py-3 font-semibold text-green-600">มาเรียน</th>
               <th className="px-4 py-3 font-semibold text-yellow-600">ป่วย</th>
@@ -164,7 +163,7 @@ const AttendanceSummary: React.FC<Props> = ({ students }) => {
           <tbody className="divide-y divide-gray-200 bg-white">
             {loading ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                   <div className="flex justify-center items-center gap-2">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-pink-500"></div>
                     กำลังโหลดข้อมูล...
@@ -173,12 +172,11 @@ const AttendanceSummary: React.FC<Props> = ({ students }) => {
               </tr>
             ) : summaryData.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลนักเรียน</td>
+                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลนักเรียน</td>
               </tr>
             ) : (
               summaryData.map((row, idx) => (
                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-gray-600">{row.StudentID}</td>
                   <td className="px-4 py-3 text-left font-medium text-gray-900">{row.Name}</td>
                   <td className="px-4 py-3 text-green-600">{row.Present}</td>
                   <td className="px-4 py-3 text-yellow-600">{row.Sick}</td>

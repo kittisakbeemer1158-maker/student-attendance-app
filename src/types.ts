@@ -10,7 +10,7 @@ export interface AttendanceRecord {
   grade: string;
   subject: string;
   studentId: string;
-  status: 'มา' | 'สาย' | 'ลา' | 'ขาด';
+  status: 'มา' | 'ป่วย' | 'ลา' | 'ขาด';
   remark?: string;
 }
 

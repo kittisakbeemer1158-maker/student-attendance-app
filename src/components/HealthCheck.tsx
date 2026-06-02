@@ -141,91 +141,102 @@ const HealthCheck: React.FC<Props> = ({ students }) => {
         </div>
       </div>
 
-      {isSavedThisWeek && !isEditMode && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-green-800 font-bold text-lg">
-            ✅ สัปดาห์นี้บันทึกแล้ว
+      {isSavedThisWeek && !isEditMode ? (
+        <div className="mb-6 py-12 bg-green-50 border border-green-200 rounded-2xl flex flex-col items-center justify-center gap-4 text-center">
+          <div className="text-green-500 bg-green-100 p-4 rounded-full">
+            <Activity className="w-12 h-12" />
           </div>
+          <div className="text-green-800 font-bold text-2xl">
+            สัปดาห์นี้บันทึกข้อมูลแล้ว
+          </div>
+          <p className="text-green-600 mb-2">ข้อมูลการตรวจสุขภาพของสัปดาห์นี้ถูกบันทึกเข้าระบบแล้ว<br/>หากต้องการบันทึกใหม่ (เขียนทับของเดิม) กรุณากดปุ่มด้านล่าง</p>
           <button 
-            onClick={() => setIsEditMode(true)} 
-            className="bg-white text-green-700 border border-green-300 px-4 py-2 rounded-lg font-bold hover:bg-green-100 transition-colors shadow-sm"
+            onClick={() => {
+              setIsEditMode(true);
+              const newRecords: Record<string, any> = {};
+              students.forEach(s => {
+                newRecords[s.ID] = { Clothes: '3', Hair: '3', Nails: '3', Body: '3', Teeth: '3', Remark: '' };
+              });
+              setRecords(newRecords);
+            }} 
+            className="bg-white text-green-700 border border-green-300 px-6 py-3 rounded-xl font-bold hover:bg-green-100 transition-colors shadow-sm flex items-center gap-2"
           >
-            ✏️ บันทึกใหม่
+            ✏️ บันทึกใหม่ทั้งหมด (เขียนทับ)
           </button>
         </div>
-      )}
-
-      <div className="overflow-x-auto rounded-xl border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 font-semibold text-gray-600">เลขที่/รหัส</th>
-              <th className="px-4 py-3 font-semibold text-gray-600 text-left">ชื่อ-สกุล</th>
-              {categories.map(c => (
-                <th key={c.key} className="px-2 py-3 font-semibold text-gray-600">{c.label}</th>
-              ))}
-              <th className="px-4 py-3 font-semibold text-gray-600 text-left">หมายเหตุ</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {loading ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
-                  กำลังโหลดข้อมูล...
-                </td>
-              </tr>
-            ) : students.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลนักเรียน</td>
-              </tr>
-            ) : (
-              students.map((student, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-gray-600">{student.ID}</td>
-                  <td className="px-4 py-3 text-left font-medium text-gray-900">{student.Name}</td>
-                  
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 font-semibold text-gray-600 text-left">ชื่อ-สกุล</th>
                   {categories.map(c => (
-                    <td key={c.key} className="px-2 py-3">
-                      <select
-                        value={records[student.ID]?.[c.key] || '3'}
-                        onChange={(e) => handleChange(student.ID, c.key, e.target.value)}
-                        disabled={!isEditMode}
-                        className={`text-xs rounded-lg border-gray-200 shadow-sm focus:ring-green-500 focus:border-green-500 font-medium
-                          ${records[student.ID]?.[c.key] === '3' ? 'text-green-600' : ''}
-                          ${records[student.ID]?.[c.key] === '2' ? 'text-yellow-600' : ''}
-                          ${records[student.ID]?.[c.key] === '1' ? 'text-red-600' : ''}
-                          ${!isEditMode ? 'opacity-70 cursor-not-allowed bg-gray-50' : ''}
-                        `}
-                      >
-                        <option value="3">3 = ดี</option>
-                        <option value="2">2 = พอใช้</option>
-                        <option value="1">1 = แก้ไข</option>
-                      </select>
-                    </td>
+                    <th key={c.key} className="px-2 py-3 font-semibold text-gray-600">{c.label}</th>
                   ))}
-                  
-                  <td className="px-4 py-3">
-                    <input
-                      type="text"
-                      placeholder="หมายเหตุ..."
-                      value={records[student.ID]?.Remark || ''}
-                      onChange={(e) => handleChange(student.ID, 'Remark', e.target.value)}
-                      disabled={!isEditMode}
-                      className={`w-full text-xs rounded-lg border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500 ${!isEditMode ? 'opacity-70 cursor-not-allowed bg-gray-50' : ''}`}
-                    />
-                  </td>
+                  <th className="px-4 py-3 font-semibold text-gray-600 text-left">หมายเหตุ</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      
-      <div className="mt-4 text-xs text-gray-500 flex gap-4">
-        <span><strong className="text-green-600">3</strong> = ดี</span>
-        <span><strong className="text-yellow-600">2</strong> = พอใช้</span>
-        <span><strong className="text-red-600">1</strong> = แก้ไข</span>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                      กำลังโหลดข้อมูล...
+                    </td>
+                  </tr>
+                ) : students.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">ไม่พบข้อมูลนักเรียน</td>
+                  </tr>
+                ) : (
+                  students.map((student, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3 text-left font-medium text-gray-900">{student.Name}</td>
+                      
+                      {categories.map(c => (
+                        <td key={c.key} className="px-2 py-3">
+                          <select
+                            value={records[student.ID]?.[c.key] || '3'}
+                            onChange={(e) => handleChange(student.ID, c.key, e.target.value)}
+                            disabled={!isEditMode}
+                            className={`text-xs rounded-lg border-gray-200 shadow-sm focus:ring-green-500 focus:border-green-500 font-medium
+                              ${records[student.ID]?.[c.key] === '3' ? 'text-green-600' : ''}
+                              ${records[student.ID]?.[c.key] === '2' ? 'text-yellow-600' : ''}
+                              ${records[student.ID]?.[c.key] === '1' ? 'text-red-600' : ''}
+                              ${!isEditMode ? 'opacity-70 cursor-not-allowed bg-gray-50' : ''}
+                            `}
+                          >
+                            <option value="3">3 = ดี</option>
+                            <option value="2">2 = พอใช้</option>
+                            <option value="1">1 = แก้ไข</option>
+                          </select>
+                        </td>
+                      ))}
+                      
+                      <td className="px-4 py-3">
+                        <input
+                          type="text"
+                          placeholder="หมายเหตุ..."
+                          value={records[student.ID]?.Remark || ''}
+                          onChange={(e) => handleChange(student.ID, 'Remark', e.target.value)}
+                          disabled={!isEditMode}
+                          className={`w-full text-xs rounded-lg border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500 ${!isEditMode ? 'opacity-70 cursor-not-allowed bg-gray-50' : ''}`}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="mt-4 text-xs text-gray-500 flex gap-4">
+            <span><strong className="text-green-600">3</strong> = ดี</span>
+            <span><strong className="text-yellow-600">2</strong> = พอใช้</span>
+            <span><strong className="text-red-600">1</strong> = แก้ไข</span>
+          </div>
+        </>
+      )}
     </div>
   );
 };

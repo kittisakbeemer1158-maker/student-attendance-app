@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, Tooltip, Legend, 
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer 
 } from 'recharts';
-import { Search, Loader2, Printer } from 'lucide-react';
+import { Search, Loader2, Printer, Calendar } from 'lucide-react';
 
 interface Props {
   students: Student[];
@@ -14,8 +14,10 @@ interface Props {
 
 const Report = ({ students }: Props) => {
   const [selectedRoom, setSelectedRoom] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [month, setMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,14 +27,21 @@ const Report = ({ students }: Props) => {
   const uniqueRooms = Array.from(new Set(students.map(s => `${s.Grade || ''} ${s.Room || ''}`.trim()))).filter(Boolean);
 
   const handleSearch = async () => {
+    if (!month) return alert('กรุณาเลือกเดือน');
     setIsLoading(true);
     setHasSearched(true);
     try {
+      const [yearStr, monthStr] = month.split('-');
+      const startDate = `${yearStr}-${monthStr}-01`;
+      const lastDay = new Date(parseInt(yearStr), parseInt(monthStr), 0).getDate();
+      const endDate = `${yearStr}-${monthStr}-${lastDay}`;
+
       const result = await fetchFilteredAttendance({
         room: selectedRoom,
-        startDate: startDate || undefined,
-        endDate: endDate || undefined
+        startDate,
+        endDate
       });
+      
       if (result.status === 'success') {
         setLogs(result.logs || []);
       } else {
@@ -45,10 +54,9 @@ const Report = ({ students }: Props) => {
     }
   };
 
-  // 1. Process data for the table and charts
+  // Process data to match students and normalize fields
   const processedLogs = useMemo(() => {
     return logs.map(log => {
-      // Find Student ID
       let foundId = null;
       Object.keys(log).forEach(key => {
         const tk = key.trim().toLowerCase();
@@ -57,19 +65,12 @@ const Report = ({ students }: Props) => {
         }
       });
       const cleanFoundId = String(foundId).replace(/[^a-zA-Z0-9]/g, '');
-
-      // Match student to get Name and Room
       const student = students.find(s => String(s.ID).replace(/[^a-zA-Z0-9]/g, '') === cleanFoundId);
       
-      let subject = '';
       let status = '';
-      let remark = '';
-
       Object.keys(log).forEach(key => {
         const tk = key.trim().toLowerCase();
-        if (tk.includes('subject') || tk.includes('วิชา')) subject = String(log[key] || '').trim();
         if (tk.includes('status') || tk.includes('สถานะ')) status = String(log[key] || '').trim();
-        if (tk.includes('remark') || tk.includes('เหตุ')) remark = String(log[key] || '').trim();
       });
 
       return {
@@ -77,30 +78,74 @@ const Report = ({ students }: Props) => {
         studentId: foundId,
         studentName: student ? student.Name : `ไม่พบชื่อ (ID: ${foundId})`,
         roomKey: student ? `${student.Grade || ''} ${student.Room || ''}`.trim() : 'ไม่ระบุห้อง',
-        subject,
-        status,
-        remark,
-        raw: log
+        status
       };
     });
   }, [logs, students]);
 
-  // 2. Data for Dashboard
+  // Build grid for Monthly Table
+  const gridData = useMemo(() => {
+    if (!month) return { days: [], rows: [] };
+    const [yearStr, monthStr] = month.split('-');
+    const lastDay = new Date(parseInt(yearStr), parseInt(monthStr), 0).getDate();
+    const days = Array.from({ length: lastDay }, (_, i) => i + 1);
+
+    const filteredStudents = selectedRoom 
+      ? students.filter(s => `${s.Grade || ''} ${s.Room || ''}`.trim() === selectedRoom)
+      : students;
+
+    const rows = filteredStudents.map(student => {
+      const studentLogs = processedLogs.filter(log => String(log.studentId).replace(/[^a-zA-Z0-9]/g, '') === String(student.ID).replace(/[^a-zA-Z0-9]/g, ''));
+      
+      const dayStatuses: Record<number, string> = {};
+      let present = 0;
+      let sick = 0;
+      let leave = 0;
+      let absent = 0;
+
+      studentLogs.forEach(log => {
+        const d = new Date(log.date);
+        if (!isNaN(d.getTime())) {
+          const dayNum = d.getDate();
+          const st = log.status;
+          let sym = '';
+          if (st === 'มา') { sym = '✓'; present++; }
+          else if (st === 'ป่วย' || st === 'สาย') { sym = 'ป'; sick++; }
+          else if (st === 'ลา') { sym = 'ล'; leave++; }
+          else if (st === 'ขาด') { sym = 'ข'; absent++; }
+          
+          if (sym) dayStatuses[dayNum] = sym;
+        }
+      });
+
+      return {
+        id: student.ID,
+        name: student.Name,
+        room: `${student.Grade || ''} ${student.Room || ''}`.trim(),
+        dayStatuses,
+        present,
+        sick,
+        leave,
+        absent
+      };
+    });
+
+    return { days, rows };
+  }, [month, students, selectedRoom, processedLogs]);
+
+  // Dashboards Data
   const pieData = useMemo(() => {
-    let present = 0;
-    let late = 0;
-    let leave = 0;
-    let absent = 0;
+    let present = 0, sick = 0, leave = 0, absent = 0;
     processedLogs.forEach(log => {
       if (log.status === 'มา') present++;
-      else if (log.status === 'สาย') late++;
+      else if (log.status === 'ป่วย' || log.status === 'สาย') sick++;
       else if (log.status === 'ลา') leave++;
       else if (log.status === 'ขาด') absent++;
     });
     
     return [
       { name: 'มา', value: present, color: '#22c55e' },
-      { name: 'สาย', value: late, color: '#eab308' },
+      { name: 'ป่วย', value: sick, color: '#eab308' },
       { name: 'ลา', value: leave, color: '#3b82f6' },
       { name: 'ขาด', value: absent, color: '#ef4444' }
     ].filter(item => item.value > 0);
@@ -113,7 +158,7 @@ const Report = ({ students }: Props) => {
       if (!d) return;
       if (!dateMap[d]) dateMap[d] = { total: 0, present: 0 };
       dateMap[d].total++;
-      if (log.status === 'มา' || log.status === 'สาย') {
+      if (log.status === 'มา' || log.status === 'ป่วย' || log.status === 'สาย') {
         dateMap[d].present++;
       }
     });
@@ -137,7 +182,7 @@ const Report = ({ students }: Props) => {
         studentStats[key] = { name: log.studentName, room: log.roomKey, total: 0, present: 0 };
       }
       studentStats[key].total++;
-      if (log.status === 'มา' || log.status === 'สาย') {
+      if (log.status === 'มา') {
         studentStats[key].present++;
       }
     });
@@ -153,24 +198,34 @@ const Report = ({ students }: Props) => {
 
   // Exports
   const exportToExcel = () => {
-    if (processedLogs.length === 0) return alert('ไม่มีข้อมูลสำหรับส่งออก');
-    const dataToExport = processedLogs.map(log => ({
-      'วันที่': log.date,
-      'ห้องเรียน': log.roomKey,
-      'ชื่อ-นามสกุล': log.studentName,
-      'วิชา': log.subject,
-      'สถานะ': log.status,
-      'หมายเหตุ': log.remark
-    }));
+    if (gridData.rows.length === 0) return alert('ไม่มีข้อมูลสำหรับส่งออก');
+    const dataToExport = gridData.rows.map(row => {
+      const obj: any = { 'ชื่อ-นามสกุล': row.name };
+      gridData.days.forEach(d => {
+        obj[d] = row.dayStatuses[d] || '';
+      });
+      obj['มา'] = row.present;
+      obj['ป่วย'] = row.sick;
+      obj['ลา'] = row.leave;
+      obj['ขาด'] = row.absent;
+      return obj;
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-    XLSX.writeFile(workbook, "attendance_report.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Monthly Attendance");
+    XLSX.writeFile(workbook, "monthly_attendance_report.xlsx");
   };
 
   const exportToPDF = () => {
     window.print();
+  };
+
+  const formatThaiMonth = (monthKey: string) => {
+    if (!monthKey) return '';
+    const [year, month] = monthKey.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
   };
 
   return (
@@ -178,10 +233,10 @@ const Report = ({ students }: Props) => {
       {/* FILTER SECTION */}
       <div className="p-6 bg-white rounded-2xl shadow-sm border border-pink-100 print:hidden">
         <h2 className="text-2xl font-bold text-pink-600 mb-6 flex items-center">
-          <Search className="w-6 h-6 mr-2" /> ค้นหารายงาน (Server-Side)
+          <Calendar className="w-6 h-6 mr-2" /> ค้นหารายงานรายเดือน
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">เลือกห้องเรียน</label>
             <select 
@@ -194,20 +249,11 @@ const Report = ({ students }: Props) => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ตั้งแต่วันที่</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">เลือกเดือน</label>
             <input 
-              type="date" 
-              value={startDate} 
-              onChange={e => setStartDate(e.target.value)} 
-              className="w-full rounded-xl border-gray-200 shadow-sm focus:border-pink-500 focus:ring-pink-500 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ถึงวันที่</label>
-            <input 
-              type="date" 
-              value={endDate} 
-              onChange={e => setEndDate(e.target.value)} 
+              type="month" 
+              value={month} 
+              onChange={e => setMonth(e.target.value)} 
               className="w-full rounded-xl border-gray-200 shadow-sm focus:border-pink-500 focus:ring-pink-500 transition-colors"
             />
           </div>
@@ -226,10 +272,9 @@ const Report = ({ students }: Props) => {
 
       {/* PRINT HEADER (ONLY VISIBLE ON PRINT) */}
       <div className="hidden print:block text-center mb-8 border-b-2 border-gray-800 pb-4">
-        <h1 className="text-2xl font-black text-black">รายงานสรุปการเช็คชื่อนักเรียน</h1>
-        <p className="text-sm text-gray-700 mt-2">
-          {selectedRoom ? `ห้องเรียน: ${selectedRoom}` : 'ทุกห้องเรียน'} 
-          {(startDate || endDate) && ` | วันที่: ${startDate || '-'} ถึง ${endDate || '-'}`}
+        <h1 className="text-2xl font-black text-black">รายงานการมาเรียนรายเดือน</h1>
+        <p className="text-lg text-gray-700 mt-2">
+          เดือน: {formatThaiMonth(month)} | {selectedRoom ? `ห้องเรียน: ${selectedRoom}` : 'ทุกห้องเรียน'} 
         </p>
       </div>
 
@@ -239,7 +284,7 @@ const Report = ({ students }: Props) => {
         </div>
       )}
 
-      {processedLogs.length > 0 && (
+      {hasSearched && gridData.rows.length > 0 && (
         <>
           <div className="flex justify-end gap-3 print:hidden">
             <button onClick={exportToPDF} className="flex items-center bg-gray-800 hover:bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95">
@@ -250,49 +295,49 @@ const Report = ({ students }: Props) => {
             </button>
           </div>
 
-          {/* PART 1: RAW DATA TABLE */}
+          {/* PART 1: RAW DATA GRID */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 print:rounded-none print:shadow-none print:border-none">
-            <div className="p-6 border-b border-gray-100 print:p-0 print:border-none print:mb-4">
-              <h3 className="text-xl font-bold text-gray-800 print:text-black">📋 ข้อมูลการเช็คชื่อรายบุคคล</h3>
-              <p className="text-sm text-gray-500 mt-1 print:hidden">แสดงผลข้อมูลดิบทั้งหมดตามเงื่อนไขที่คุณเลือก</p>
+            <div className="p-6 border-b border-gray-100 print:p-0 print:border-none print:mb-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-gray-800 print:text-black">📋 ตารางการเช็คชื่อรายเดือน ({formatThaiMonth(month)})</h3>
             </div>
             
-            {/* 
-              print:overflow-visible removes the scrollbar in PDF so no rows are hidden 
-              print:max-h-none removes the 500px limit
-            */}
-            <div className="overflow-x-auto overflow-y-auto max-h-[500px] print:overflow-visible print:max-h-none p-0 sm:p-2">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50/80 sticky top-0 print:static print:bg-gray-100">
+            <div className="overflow-x-auto p-0 sm:p-2">
+              <table className="min-w-full border-collapse border border-gray-200 text-sm">
+                <thead className="bg-gray-50/80 sticky top-0 print:static">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider print:text-black print:border-b-2 print:border-gray-400">วันที่</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider print:text-black print:border-b-2 print:border-gray-400">ชื่อ-สกุล</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider print:text-black print:border-b-2 print:border-gray-400">ห้องเรียน</th>
-                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-600 uppercase tracking-wider print:text-black print:border-b-2 print:border-gray-400">สถานะ</th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-600 uppercase tracking-wider print:text-black print:border-b-2 print:border-gray-400">หมายเหตุ</th>
+                    <th className="border border-gray-200 px-4 py-2 text-left font-bold text-gray-600 whitespace-nowrap">ชื่อ-สกุล</th>
+                    {gridData.days.map(d => (
+                      <th key={d} className="border border-gray-200 px-1 py-2 text-center font-bold text-gray-600 min-w-[24px]">{d}</th>
+                    ))}
+                    <th className="border border-gray-200 px-2 py-2 text-center font-bold text-green-600">มา</th>
+                    <th className="border border-gray-200 px-2 py-2 text-center font-bold text-yellow-600">ป่วย</th>
+                    <th className="border border-gray-200 px-2 py-2 text-center font-bold text-blue-600">ลา</th>
+                    <th className="border border-gray-200 px-2 py-2 text-center font-bold text-red-600">ขาด</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100 print:divide-gray-300">
-                  {processedLogs.map((log, i) => (
+                <tbody className="bg-white">
+                  {gridData.rows.map((row, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors print:break-inside-avoid">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 print:text-black">{log.date}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 print:text-black">{log.studentName}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 print:text-black">{log.roomKey}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <span className={`px-3 py-1.5 rounded-full text-xs font-bold print:border print:bg-transparent ${
-                          log.status === 'มา' ? 'bg-green-100 text-green-700 print:border-green-500 print:text-green-800' :
-                          log.status === 'สาย' ? 'bg-yellow-100 text-yellow-700 print:border-yellow-500 print:text-yellow-800' :
-                          log.status === 'ลา' ? 'bg-blue-100 text-blue-700 print:border-blue-500 print:text-blue-800' :
-                          'bg-red-100 text-red-700 print:border-red-500 print:text-red-800'
-                        }`}>
-                          {log.status || '-'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 print:text-black">{log.remark || '-'}</td>
+                      <td className="border border-gray-200 px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{row.name}</td>
+                      {gridData.days.map(d => (
+                        <td key={d} className="border border-gray-200 px-1 py-2 text-center font-bold">
+                          {row.dayStatuses[d] === '✓' ? <span className="text-green-600">✓</span> : 
+                           row.dayStatuses[d] === 'ป' ? <span className="text-yellow-600">ป</span> :
+                           row.dayStatuses[d] === 'ล' ? <span className="text-blue-600">ล</span> :
+                           row.dayStatuses[d] === 'ข' ? <span className="text-red-600">ข</span> : ''}
+                        </td>
+                      ))}
+                      <td className="border border-gray-200 px-2 py-2 text-center font-bold text-green-600 bg-green-50/30">{row.present}</td>
+                      <td className="border border-gray-200 px-2 py-2 text-center font-bold text-yellow-600 bg-yellow-50/30">{row.sick}</td>
+                      <td className="border border-gray-200 px-2 py-2 text-center font-bold text-blue-600 bg-blue-50/30">{row.leave}</td>
+                      <td className="border border-gray-200 px-2 py-2 text-center font-bold text-red-600 bg-red-50/30">{row.absent}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="p-4 text-sm text-gray-600 border-t border-gray-100 font-semibold bg-gray-50/50 rounded-b-2xl">
+              * สัญลักษณ์: <span className="text-green-600 mx-1">✓ = มา</span> | <span className="text-yellow-600 mx-1">ป = ป่วย</span> | <span className="text-blue-600 mx-1">ล = ลา</span> | <span className="text-red-600 mx-1">ข = ขาด</span>
             </div>
           </div>
 

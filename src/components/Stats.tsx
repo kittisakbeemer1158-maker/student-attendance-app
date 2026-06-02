@@ -75,17 +75,17 @@ const Stats = ({ attendanceLogs }: Props) => {
 
   const statusCounts = filteredLogs.reduce((acc: any, log) => {
     const status = log.Status?.trim();
-    if (['มา', 'สาย', 'ลา', 'ขาด'].includes(status)) {
+    if (['มา', 'ป่วย', 'ลา', 'ขาด'].includes(status)) {
       acc[status] = (acc[status] || 0) + 1;
     }
     return acc;
-  }, { 'มา': 0, 'สาย': 0, 'ลา': 0, 'ขาด': 0 });
+  }, { 'มา': 0, 'ป่วย': 0, 'ลา': 0, 'ขาด': 0 });
 
   const pieData = {
     labels: ['มา 🌸', 'สาย ⏳', 'ลา ✉️', 'ขาด ❌'],
     datasets: [
       {
-        data: [statusCounts['มา'], statusCounts['สาย'], statusCounts['ลา'], statusCounts['ขาด']],
+        data: [statusCounts['มา'], statusCounts['ป่วย'], statusCounts['ลา'], statusCounts['ขาด']],
         backgroundColor: ['#22c55e', '#eab308', '#3b82f6', '#ef4444'],
         borderWidth: 0,
       },
@@ -210,12 +210,12 @@ const Stats = ({ attendanceLogs }: Props) => {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">⏳</div>
               <div>
-                <p className="text-xs text-yellow-500 font-black uppercase tracking-widest">เข้าสาย</p>
-                <p className="text-3xl font-black text-yellow-600 leading-none mt-1">{statusCounts['สาย']}</p>
+                <p className="text-xs text-yellow-500 font-black uppercase tracking-widest">ป่วย</p>
+                <p className="text-3xl font-black text-yellow-600 leading-none mt-1">{statusCounts['ป่วย']}</p>
               </div>
             </div>
             <div className="text-xs font-bold text-yellow-400 bg-yellow-50 px-3 py-1 rounded-full">
-              {filteredLogs.length > 0 ? ((statusCounts['สาย'] / filteredLogs.length) * 100).toFixed(1) : 0}%
+              {filteredLogs.length > 0 ? ((statusCounts['ป่วย'] / filteredLogs.length) * 100).toFixed(1) : 0}%
             </div>
           </div>
 
