@@ -18,7 +18,7 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
   const [selectedRoom, setSelectedRoom] = useState('');
   const [subject, setSubject] = useState('');
   
-  const [attendance, setAttendance] = useState<Record<string, 'มา' | 'ป่วย' | 'ลา' | 'ขาด'>>({});
+  const [attendance, setAttendance] = useState<Record<string, 'มา' | 'ลาป่วย' | 'ลากิจ' | 'ขาด'>>({});
   const [milkStatuses, setMilkStatuses] = useState<Record<string, string>>({});
   const [toothStatuses, setToothStatuses] = useState<Record<string, string>>({});
   const [remarks, setRemarks] = useState<Record<string, string>>({});
@@ -114,7 +114,7 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
       setHasCheckedInToday(false);
       setIsEditMode(true);
       // Apply defaults since it's a new check-in
-      const defaultAtt: Record<string, 'มา' | 'ป่วย' | 'ลา' | 'ขาด'> = {};
+      const defaultAtt: Record<string, 'มา' | 'ลาป่วย' | 'ลากิจ' | 'ขาด'> = {};
       const defaultMilk: Record<string, string> = {};
       const defaultTooth: Record<string, string> = {};
       filteredStudents.forEach(s => {
@@ -130,7 +130,7 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
 
   }, [date, selectedRoom, attendanceLogs, milkLogs, toothLogs, students, loadingExtra]);
 
-  const handleAttStatusChange = (studentId: string, status: 'มา' | 'ป่วย' | 'ลา' | 'ขาด') => {
+  const handleAttStatusChange = (studentId: string, status: 'มา' | 'ลาป่วย' | 'ลากิจ' | 'ขาด') => {
     if (!isEditMode) return;
     setAttendance(prev => ({ ...prev, [studentId]: status }));
   };
@@ -147,7 +147,7 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
 
   const handleUnlockAll = () => {
     setIsEditMode(true);
-    const defaultAtt: Record<string, 'มา' | 'ป่วย' | 'ลา' | 'ขาด'> = {};
+    const defaultAtt: Record<string, 'มา' | 'ลาป่วย' | 'ลากิจ' | 'ขาด'> = {};
     const defaultMilk: Record<string, string> = {};
     const defaultTooth: Record<string, string> = {};
     filteredStudents.forEach(s => {
@@ -301,8 +301,8 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
                               <td className="px-4 py-4 whitespace-nowrap text-center">
                                   <div className="flex justify-center space-x-1">
                                     <button onClick={() => handleAttStatusChange(student.ID, 'มา')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'มา' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>มา</button>
-                                    <button onClick={() => handleAttStatusChange(student.ID, 'ป่วย')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ป่วย' ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>สาย</button>
-                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลา')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ลา' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลา</button>
+                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${(attStatus === 'ป่วย' || attStatus === 'ลาป่วย') ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
+                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${(attStatus === 'ลา' || attStatus === 'ลากิจ') ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
                                     <button onClick={() => handleAttStatusChange(student.ID, 'ขาด')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ขาด' ? 'bg-red-500 text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>ขาด</button>
                                   </div>
                               </td>
@@ -388,10 +388,10 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
                             {/* Attendance Row */}
                             <div>
                               <div className="text-xs font-semibold text-gray-500 mb-1">การมาเรียน <span className="text-red-500">*</span></div>
-                              <div className="grid grid-cols-4 gap-2">
+                              <div className="grid grid-cols-2 gap-2">
                                 <button onClick={() => handleAttStatusChange(student.ID, 'มา')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'มา' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>มา</button>
-                                <button onClick={() => handleAttStatusChange(student.ID, 'ป่วย')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ป่วย' ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>สาย</button>
-                                <button onClick={() => handleAttStatusChange(student.ID, 'ลา')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ลา' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลา</button>
+                                <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`py-2 rounded-xl text-xs font-bold transition-all ${(attStatus === 'ป่วย' || attStatus === 'ลาป่วย') ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
+                                <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`py-2 rounded-xl text-xs font-bold transition-all ${(attStatus === 'ลา' || attStatus === 'ลากิจ') ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
                                 <button onClick={() => handleAttStatusChange(student.ID, 'ขาด')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ขาด' ? 'bg-red-500 text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>ขาด</button>
                               </div>
                             </div>

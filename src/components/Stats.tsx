@@ -75,17 +75,18 @@ const Stats = ({ attendanceLogs }: Props) => {
 
   const statusCounts = filteredLogs.reduce((acc: any, log) => {
     const status = log.Status?.trim();
-    if (['มา', 'ป่วย', 'ลา', 'ขาด'].includes(status)) {
-      acc[status] = (acc[status] || 0) + 1;
-    }
+    if (status === 'มา') acc['มา']++;
+    else if (status === 'ป่วย' || status === 'ลาป่วย' || status === 'สาย') acc['ลาป่วย']++;
+    else if (status === 'ลา' || status === 'ลากิจ') acc['ลากิจ']++;
+    else if (status === 'ขาด') acc['ขาด']++;
     return acc;
-  }, { 'มา': 0, 'ป่วย': 0, 'ลา': 0, 'ขาด': 0 });
+  }, { 'มา': 0, 'ลาป่วย': 0, 'ลากิจ': 0, 'ขาด': 0 });
 
   const pieData = {
-    labels: ['มา 🌸', 'สาย ⏳', 'ลา ✉️', 'ขาด ❌'],
+    labels: ['มา 🌸', 'ลาป่วย 🤒', 'ลากิจ ✉️', 'ขาด ❌'],
     datasets: [
       {
-        data: [statusCounts['มา'], statusCounts['ป่วย'], statusCounts['ลา'], statusCounts['ขาด']],
+        data: [statusCounts['มา'], statusCounts['ลาป่วย'], statusCounts['ลากิจ'], statusCounts['ขาด']],
         backgroundColor: ['#22c55e', '#eab308', '#3b82f6', '#ef4444'],
         borderWidth: 0,
       },
@@ -208,14 +209,14 @@ const Stats = ({ attendanceLogs }: Props) => {
 
           <div className="group p-5 bg-white border-2 border-yellow-50 rounded-2xl flex items-center justify-between hover:border-yellow-200 hover:shadow-lg transition-all">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">⏳</div>
+              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">🤒</div>
               <div>
-                <p className="text-xs text-yellow-500 font-black uppercase tracking-widest">ป่วย</p>
-                <p className="text-3xl font-black text-yellow-600 leading-none mt-1">{statusCounts['ป่วย']}</p>
+                <p className="text-xs text-yellow-500 font-black uppercase tracking-widest">ลาป่วย</p>
+                <p className="text-3xl font-black text-yellow-600 leading-none mt-1">{statusCounts['ลาป่วย']}</p>
               </div>
             </div>
             <div className="text-xs font-bold text-yellow-400 bg-yellow-50 px-3 py-1 rounded-full">
-              {filteredLogs.length > 0 ? ((statusCounts['ป่วย'] / filteredLogs.length) * 100).toFixed(1) : 0}%
+              {filteredLogs.length > 0 ? ((statusCounts['ลาป่วย'] / filteredLogs.length) * 100).toFixed(1) : 0}%
             </div>
           </div>
 
@@ -223,12 +224,12 @@ const Stats = ({ attendanceLogs }: Props) => {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl group-hover:rotate-12 transition-transform">✉️</div>
               <div>
-                <p className="text-xs text-blue-500 font-black uppercase tracking-widest">ลาเรียน</p>
-                <p className="text-3xl font-black text-blue-600 leading-none mt-1">{statusCounts['ลา']}</p>
+                <p className="text-xs text-blue-500 font-black uppercase tracking-widest">ลากิจ</p>
+                <p className="text-3xl font-black text-blue-600 leading-none mt-1">{statusCounts['ลากิจ']}</p>
               </div>
             </div>
             <div className="text-xs font-bold text-blue-400 bg-blue-50 px-3 py-1 rounded-full">
-              {filteredLogs.length > 0 ? ((statusCounts['ลา'] / filteredLogs.length) * 100).toFixed(1) : 0}%
+              {filteredLogs.length > 0 ? ((statusCounts['ลากิจ'] / filteredLogs.length) * 100).toFixed(1) : 0}%
             </div>
           </div>
 

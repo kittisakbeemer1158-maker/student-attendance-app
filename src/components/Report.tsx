@@ -110,8 +110,8 @@ const Report = ({ students }: Props) => {
           const st = log.status;
           let sym = '';
           if (st === 'มา') { sym = '✓'; present++; }
-          else if (st === 'ป่วย' || st === 'สาย') { sym = 'ป'; sick++; }
-          else if (st === 'ลา') { sym = 'ล'; leave++; }
+          else if (st === 'ป่วย' || st === 'ลาป่วย' || st === 'สาย') { sym = 'ป'; sick++; }
+          else if (st === 'ลา' || st === 'ลากิจ') { sym = 'ล'; leave++; }
           else if (st === 'ขาด') { sym = 'ข'; absent++; }
           
           if (sym) dayStatuses[dayNum] = sym;
@@ -138,8 +138,8 @@ const Report = ({ students }: Props) => {
     let present = 0, sick = 0, leave = 0, absent = 0;
     processedLogs.forEach(log => {
       if (log.status === 'มา') present++;
-      else if (log.status === 'ป่วย' || log.status === 'สาย') sick++;
-      else if (log.status === 'ลา') leave++;
+      else if (log.status === 'ป่วย' || log.status === 'ลาป่วย' || log.status === 'สาย') sick++;
+      else if (log.status === 'ลา' || log.status === 'ลากิจ') leave++;
       else if (log.status === 'ขาด') absent++;
     });
     
@@ -158,7 +158,7 @@ const Report = ({ students }: Props) => {
       if (!d) return;
       if (!dateMap[d]) dateMap[d] = { total: 0, present: 0 };
       dateMap[d].total++;
-      if (log.status === 'มา' || log.status === 'ป่วย' || log.status === 'สาย') {
+      if (log.status === 'มา' || log.status === 'ป่วย' || log.status === 'ลาป่วย' || log.status === 'สาย') {
         dateMap[d].present++;
       }
     });
