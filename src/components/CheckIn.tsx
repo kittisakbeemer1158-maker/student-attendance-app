@@ -301,8 +301,8 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
                               <td className="px-4 py-4 whitespace-nowrap text-center">
                                   <div className="flex justify-center space-x-1">
                                     <button onClick={() => handleAttStatusChange(student.ID, 'มา')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'มา' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>มา</button>
-                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${(attStatus === 'ป่วย' || attStatus === 'ลาป่วย') ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
-                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${(attStatus === 'ลา' || attStatus === 'ลากิจ') ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
+                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ลาป่วย' ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
+                                    <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ลากิจ' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
                                     <button onClick={() => handleAttStatusChange(student.ID, 'ขาด')} className={`px-2 py-1 rounded-lg text-xs font-semibold transition-all ${attStatus === 'ขาด' ? 'bg-red-500 text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>ขาด</button>
                                   </div>
                               </td>
@@ -390,8 +390,8 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
                               <div className="text-xs font-semibold text-gray-500 mb-1">การมาเรียน <span className="text-red-500">*</span></div>
                               <div className="grid grid-cols-2 gap-2">
                                 <button onClick={() => handleAttStatusChange(student.ID, 'มา')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'มา' ? 'bg-green-500 text-white shadow-md' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>มา</button>
-                                <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`py-2 rounded-xl text-xs font-bold transition-all ${(attStatus === 'ป่วย' || attStatus === 'ลาป่วย') ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
-                                <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`py-2 rounded-xl text-xs font-bold transition-all ${(attStatus === 'ลา' || attStatus === 'ลากิจ') ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
+                                <button onClick={() => handleAttStatusChange(student.ID, 'ลาป่วย')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ลาป่วย' ? 'bg-yellow-500 text-white shadow-md' : 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}>ลาป่วย</button>
+                                <button onClick={() => handleAttStatusChange(student.ID, 'ลากิจ')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ลากิจ' ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'}`}>ลากิจ</button>
                                 <button onClick={() => handleAttStatusChange(student.ID, 'ขาด')} className={`py-2 rounded-xl text-xs font-bold transition-all ${attStatus === 'ขาด' ? 'bg-red-500 text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'}`}>ขาด</button>
                               </div>
                             </div>
