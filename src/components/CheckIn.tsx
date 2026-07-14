@@ -133,6 +133,10 @@ const CheckIn = ({ students, attendanceLogs, onSaveSuccess }: Props) => {
   const handleAttStatusChange = (studentId: string, status: 'มา' | 'ลาป่วย' | 'ลากิจ' | 'ขาด') => {
     if (!isEditMode) return;
     setAttendance(prev => ({ ...prev, [studentId]: status }));
+    if (status !== 'มา') {
+      setMilkStatuses(prev => ({ ...prev, [studentId]: 'ไม่ดื่ม' }));
+      setToothStatuses(prev => ({ ...prev, [studentId]: 'ไม่แปรง' }));
+    }
   };
 
   const handleMilkChange = (studentId: string, status: string) => {

@@ -213,7 +213,12 @@ const Report = ({ students }: Props) => {
     const dataToExport = gridData.rows.map(row => {
       const obj: any = { 'ชื่อ-นามสกุล': row.name };
       gridData.days.forEach(d => {
-        obj[d] = row.dayStatuses[d] || '';
+        let sym = row.dayStatuses[d];
+        if (sym === '✓') obj[d] = '';
+        else if (sym === 'ป') obj[d] = 'ลาป่วย';
+        else if (sym === 'ล') obj[d] = 'ลากิจ';
+        else if (sym === 'ข') obj[d] = 'ขาด';
+        else obj[d] = '';
       });
       obj['มา'] = row.present;
       obj['ป่วย'] = row.sick;
@@ -241,6 +246,17 @@ const Report = ({ students }: Props) => {
 
   return (
     <div className="space-y-6 pb-12 print:pb-0 print:space-y-4">
+      <style type="text/css">
+        {`
+          @media print {
+            @page { size: landscape; margin: 10mm; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print\\:overflow-visible { overflow: visible !important; }
+            /* Scale down table to fit if needed */
+            .print\\:text-[10px] th, .print\\:text-[10px] td { font-size: 10px !important; padding: 4px !important; }
+          }
+        `}
+      </style>
       {/* FILTER SECTION */}
       <div className="p-6 bg-white rounded-2xl shadow-sm border border-pink-100 print:hidden">
         <h2 className="text-2xl font-bold text-pink-600 mb-6 flex items-center">
@@ -312,8 +328,9 @@ const Report = ({ students }: Props) => {
               <h3 className="text-xl font-bold text-gray-800 print:text-black">📋 ตารางการเช็คชื่อรายเดือน ({formatThaiMonth(month)})</h3>
             </div>
             
-            <div className="overflow-x-auto p-0 sm:p-2">
-              <table className="min-w-full border-collapse border border-gray-200 text-sm">
+            {/* DESKTOP/PRINT TABLE */}
+            <div className="overflow-x-auto pb-4 hidden md:block print:block print:overflow-visible">
+              <table className="min-w-full border-collapse border border-gray-200 bg-white print:w-full print:text-[10px] text-sm">
                 <thead className="bg-gray-50/80 sticky top-0 print:static">
                   <tr>
                     <th className="border border-gray-200 px-4 py-2 text-left font-bold text-gray-600 whitespace-nowrap">ชื่อ-สกุล</th>
