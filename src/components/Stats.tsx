@@ -69,8 +69,32 @@ const Stats = ({ attendanceLogs }: Props) => {
 
   // Filter logs based on selection
   const filteredLogs = useMemo(() => {
-    if (filterType === 'all') return attendanceLogs;
-    return attendanceLogs.filter(log => getMonthKey(log) === selectedMonth);
+    let logsToFilter = attendanceLogs;
+    if (filterType === 'monthly' && selectedMonth) {
+      logsToFilter = attendanceLogs.filter(log => getMonthKey(log) === selectedMonth);
+    }
+    
+    // Deduplicate logs: keep only the latest log for each student on a specific date
+    const latestLogsMap = new Map<string, AttendanceLog>();
+    logsToFilter.forEach(log => {
+      let dateStr = '';
+      let studentId = '';
+      Object.keys(log).forEach(key => {
+        const tk = key.trim().toLowerCase();
+        if (tk === 'date' || tk === 'วันที่' || tk === 'normalizeddate') {
+          dateStr = String((log as any)[key]);
+        }
+        if (tk.includes('studentid') || tk === 'id' || tk.includes('รหัส') || tk.includes('เลข')) {
+          studentId = String((log as any)[key]);
+        }
+      });
+      
+      const dateKey = getMonthKey(log) ? dateStr.split('T')[0] : dateStr; // simplify date string for key
+      const uniqueKey = `${dateKey}_${studentId}`;
+      latestLogsMap.set(uniqueKey, log); // Map preserves the last inserted (latest) value!
+    });
+    
+    return Array.from(latestLogsMap.values());
   }, [attendanceLogs, filterType, selectedMonth]);
 
   const statusCounts = filteredLogs.reduce((acc: any, log) => {

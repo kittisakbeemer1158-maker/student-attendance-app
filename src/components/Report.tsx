@@ -56,7 +56,7 @@ const Report = ({ students }: Props) => {
 
   // Process data to match students and normalize fields
   const processedLogs = useMemo(() => {
-    return logs.map(log => {
+    const mappedLogs = logs.map(log => {
       let foundId = null;
       Object.keys(log).forEach(key => {
         const tk = key.trim().toLowerCase();
@@ -81,6 +81,17 @@ const Report = ({ students }: Props) => {
         status
       };
     });
+
+    // Deduplicate: keep only the latest log for each student + date combo
+    const latestLogsMap = new Map<string, any>();
+    mappedLogs.forEach(log => {
+      // Split by T in case of ISO string
+      const dateKey = typeof log.date === 'string' ? log.date.split('T')[0] : log.date;
+      const uniqueKey = `${dateKey}_${log.studentId}`;
+      latestLogsMap.set(uniqueKey, log);
+    });
+    
+    return Array.from(latestLogsMap.values());
   }, [logs, students]);
 
   // Build grid for Monthly Table
